@@ -1,5 +1,5 @@
 module Rack::XRay
-  # Middleware for capturing HTTP request-tracing data and sending it to
+  # Rack middleware for capturing HTTP request-tracing data and sending it to
   # AWS X-Ray daemon via UDP.
   class Middleware
     # @param [#call] app inner Rack app
@@ -13,9 +13,15 @@ module Rack::XRay
     end
 
     def call(env)
-      trace  = @tracer.start(env)
+      logger = env['rack.errors']
+      segment  = @tracer.start(env)
+      Rack::XRay.segment = segment
+
       result = @app.call(env)
-      @tracer.finish(trace, result)
+
+      @tracer.finish(segment, result, logger)
+      Rack::XRay.segment = nil
+
       return *result
     end
   end

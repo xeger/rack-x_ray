@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 gemspec
 
 group :development do
+  gem 'faraday'
   gem 'pry'
   gem 'pry-byebug'
   gem 'rack'

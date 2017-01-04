@@ -1,0 +1,11 @@
+FROM ruby:latest
+WORKDIR /srv
+EXPOSE 8080
+
+ENV XRAY_DAEMON=
+
+CMD [ "bundle", "exec", "rackup", "-o", "0.0.0.0", "-p", "8080", "alpha.ru" ]
+
+ADD lib /srv/lib/
+ADD Gemfile Gemfile.* *.gemspec alpha.ru /srv/
+RUN gem install --no-document bundler && bundle install

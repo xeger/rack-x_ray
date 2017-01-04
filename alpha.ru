@@ -5,10 +5,12 @@ $: << lib unless $:.include?(lib)
 
 require 'rack/x_ray'
 
-use Rack::XRay, 'example'
+host, port = ENV['XRAY_DAEMON'].split(':')
+port = Integer(port)
+use Rack::XRay, 'alpha', daemon_address: host, daemon_port: port
 
 app = Proc.new do |env|
-  sleep(rand(3))
+  sleep(3*rand)
   [200, {'Content-Type' => 'text/plain'}, ["hello world"]]
 end
 

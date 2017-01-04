@@ -1,0 +1,18 @@
+version: '2'
+services:
+  daemon:
+    image: xeger/aws_xray_daemon:latest
+    ports:
+      - "2000/udp"
+    env_file:
+      .env.secret
+  alpha:
+    build:
+      context: .
+      dockerfile: Dockerfile.alpha
+    depends_on:
+      - daemon
+    environment:
+      - XRAY_DAEMON=daemon:2000
+    ports:
+      - "8080"

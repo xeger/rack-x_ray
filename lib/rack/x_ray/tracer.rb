@@ -6,7 +6,9 @@ module Rack::XRay
   # manages state in the Rack environment and elsewhere, and sends UDP packets
   # to X-Ray daemon.
   class Tracer
-    TRACE_ID_HEADER = 'HTTP_X_AMZN_TRACE_ID'.freeze
+    # Name of rack env key that contains X-Amzn-Trace-Id header
+    TRACE_ID_KEY =
+      ('HTTP_' + Rack::XRay::HTTP_HEADER.upcase.gsub('-', '_')).freeze
 
     def initialize(name, recorder)
       @name     = name
@@ -36,7 +38,7 @@ module Rack::XRay
     end
 
     # @param [Segment] segment
-    def finish(segment, result)
+    def finish(segment, result, logger)
       status = result.first
       segment.end_time = Time.now.to_f
 
@@ -49,7 +51,7 @@ module Rack::XRay
         segment.fault = true
       end
 
-      @recorder.record(segment)
+      @recorder.record(segment, logger)
     end
 
     private
@@ -62,7 +64,7 @@ module Rack::XRay
       id = nil
       parent = nil
 
-      if h = env[TRACE_ID_HEADER]
+      if h = env[TRACE_ID_KEY]
         bits = h.split(/\s*;\s*/)
         id = bits.detect { |b| b =~ /^Root=/i }
         id = id[5..-1] if id
